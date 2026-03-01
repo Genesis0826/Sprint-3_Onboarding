@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,8 @@ import {
 import { User, Lock, AlertCircle } from "lucide-react";
 
 import { loginApi } from "@/lib/authApi";
-import { setTokens, parseJwt } from "@/lib/authStorage";
+import { setTokens, parseJwt, getAccessToken } from "@/lib/authStorage";
+import { roleToPath } from "@/lib/roleMap";
 
 export default function EmployeeLoginPage() {
   const router = useRouter();
@@ -26,6 +27,17 @@ export default function EmployeeLoginPage() {
   const [error, setError] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Redirect already-authenticated users away from login
+  useEffect(() => {
+    const access = getAccessToken();
+    if (access) {
+      const decoded = parseJwt(access);
+      if (decoded?.role_name) {
+        router.replace(roleToPath(decoded.role_name));
+      }
+    }
+  }, [router]);
 
 const handleLogin = async (e: React.FormEvent) => {
   e.preventDefault();
@@ -89,8 +101,7 @@ const handleLogin = async (e: React.FormEvent) => {
 
     console.log("REDIRECTING TO:", redirectPath);
 
-    // ✅ Use hard redirect to avoid router issues
-    window.location.href = redirectPath;
+    router.push(redirectPath);
   } catch (err: any) {
     console.log("LOGIN FAILED:", err);
     setError(err?.message || "Invalid credentials");

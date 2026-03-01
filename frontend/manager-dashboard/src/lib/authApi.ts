@@ -7,6 +7,8 @@ import {
   clearAuthStorage,
 } from "./authStorage";
 
+let refreshPromise: Promise<any> | null = null;
+
 export async function loginApi(body: {
   identifier: string;
   password: string;
@@ -74,9 +76,12 @@ export async function authFetch(input: RequestInfo, init: RequestInit = {}) {
   // if not unauthorized, return
   if (first.status !== 401) return first;
 
-  // 2) try refresh then retry
+  // 2) try refresh then retry (shared promise prevents concurrent refresh race)
   try {
-    const { access_token } = await refreshApi();
+    if (!refreshPromise) {
+      refreshPromise = refreshApi().finally(() => { refreshPromise = null; });
+    }
+    const { access_token } = await refreshPromise;
 
     const second = await fetch(input, {
       ...init,

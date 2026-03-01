@@ -6,9 +6,10 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // ✅ CORS (allow Next.js dev server)
+  // ✅ CORS (allow Next.js dev server — set CORS_ORIGINS env var for production)
+  const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000').split(',');
   app.enableCors({
-    origin: ['http://localhost:3000'],
+    origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],

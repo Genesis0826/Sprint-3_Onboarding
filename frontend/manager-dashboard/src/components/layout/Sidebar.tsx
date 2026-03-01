@@ -29,7 +29,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-import { getAccessToken, parseJwt, clearAuthStorage } from "@/lib/authStorage";
+import { getAccessToken, parseJwt } from "@/lib/authStorage";
+import { logoutApi } from "@/lib/authApi";
 
 type PersonaType = "applicant" | "employee" | "hr" | "manager";
 
@@ -50,8 +51,8 @@ useEffect(() => {
   setUserName(full || decoded?.username || decoded?.email || "User");
 }, []);
 
-  const handleLogout = () => {
-    clearAuthStorage();
+  const handleLogout = async () => {
+    await logoutApi();
     router.push("/login");
   };
 

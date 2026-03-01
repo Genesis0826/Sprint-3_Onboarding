@@ -16,14 +16,6 @@ import {
 } from "lucide-react";
 
 
-
-// export default function EmployeeDashboardPage() {
-//   return (
-//     <AuthGuard allowedRoles={["Active Employee"]}>
-//       <EmployeeDashboardInner />
-//     </AuthGuard>
-//   );
-// }
 export default function EmployeeDashboardPage() {
   return <EmployeeDashboardInner />;
 }

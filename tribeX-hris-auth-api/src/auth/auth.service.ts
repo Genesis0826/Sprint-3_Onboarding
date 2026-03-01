@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
@@ -8,7 +8,7 @@ import { LoginDto } from '../auth/dto/login.dto';
 type UserRow = {
   user_id: string;
   company_id: string;
-  role_id: String;
+  role_id: number;
   email: string;
   username: string | null;
   employee_id: string | null;
@@ -36,6 +36,8 @@ function getBrowser(req?: any): string | null {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly supabaseService: SupabaseService,
     private readonly jwtService: JwtService,
@@ -46,15 +48,20 @@ export class AuthService {
     const { identifier, password } = loginDto;
     const rememberMe = !!loginDto.rememberMe;
 
-    const safeIdentifier = identifier.replaceAll('"', '\\"');
+    if (!/^[a-zA-Z0-9._@\-]+$/.test(identifier)) {
+      throw new UnauthorizedException('Invalid identifier format');
+    }
 
     const { data: user, error } = await supabase
       .from('user_profile')
       .select('user_id, company_id, role_id, password_hash, email, username, first_name, last_name')
-      .or(`email.eq."${safeIdentifier}",username.eq."${safeIdentifier}"`)
+      .or(`email.eq."${identifier}",username.eq."${identifier}"`)
       .maybeSingle<UserRow>();
 
-    if (error) throw new UnauthorizedException('Login failed');
+    if (error) {
+      this.logger.error(`DB error during login for: ${identifier}`, error);
+      throw new UnauthorizedException('Login failed');
+    }
     if (!user) throw new UnauthorizedException('User not found');
     if (!user.password_hash) throw new UnauthorizedException('No password set');
 
