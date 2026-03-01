@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find D:\\\\Documents\\(D\\)\\\\3rdYR-2nd\\\\CODE-PRAC\\\\supabase-auth-to-JWT-bluetribe:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)"
+    ]
+  }
+}
