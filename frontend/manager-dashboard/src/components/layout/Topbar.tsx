@@ -5,13 +5,15 @@ import { Search, Bell, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { getAccessToken, parseJwt } from "@/lib/authStorage";
 
-type PersonaType = "applicant" | "employee" | "hr" | "manager";
+type PersonaType = "applicant" | "employee" | "hr" | "manager" | "admin" | "system-admin";
 
 const roleLabel: Record<PersonaType, string> = {
   hr: "HR Administration",
   employee: "Internal Staff",
   applicant: "Job Applicant",
   manager: "Manager",
+  admin: "Administration",
+  "system-admin": "System Administration",
 };
 
 const searchPlaceholder: Record<PersonaType, string> = {
@@ -19,6 +21,8 @@ const searchPlaceholder: Record<PersonaType, string> = {
   employee: "Search...",
   applicant: "Search jobs...",
   manager: "Search team members...",
+  admin: "Search users...",
+  "system-admin": "Search...",
 };
 
 const avatarColor: Record<PersonaType, string> = {
@@ -26,6 +30,8 @@ const avatarColor: Record<PersonaType, string> = {
   employee: "bg-blue-600 text-white",
   applicant: "bg-blue-100 text-blue-700",
   manager: "bg-blue-600 text-white",
+  admin: "bg-purple-600 text-white",
+  "system-admin": "bg-red-600 text-white",
 };
 
 export function Topbar({ persona = "applicant" }: { persona?: PersonaType }) {

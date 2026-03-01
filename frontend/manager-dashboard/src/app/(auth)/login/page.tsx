@@ -67,40 +67,7 @@ const handleLogin = async (e: React.FormEvent) => {
     const decoded = parseJwt(access_token);
     const roleName = decoded?.role_name;
 
-    console.log("LOGIN OK", {
-      roleName,
-      access_preview: access_token?.slice(0, 25) + "...",
-    });
-
-    let redirectPath = "/employee";
-    switch (roleName) {
-      case "System Admin":
-        redirectPath = "/system-admin";
-        break;
-      case "Admin":
-        redirectPath = "/admin";
-        break;
-      case "HR Manager":
-        redirectPath = "/hr-manager";
-        break;
-      case "HR Recruiter":
-        redirectPath = "/hr-recruiter";
-        break;
-      case "HR Interviewer":
-        redirectPath = "/hr-interviewer";
-        break;
-      case "Active Employee":
-        redirectPath = "/employee";
-        break;
-      case "Applicant":
-        redirectPath = "/applicant";
-        break;
-      default:
-        redirectPath = "/employee";
-    }
-
-    console.log("REDIRECTING TO:", redirectPath);
-
+    const redirectPath = roleToPath(roleName) ?? "/employee";
     router.push(redirectPath);
   } catch (err: any) {
     console.log("LOGIN FAILED:", err);

@@ -32,7 +32,7 @@ import {
 import { getAccessToken, parseJwt } from "@/lib/authStorage";
 import { logoutApi } from "@/lib/authApi";
 
-type PersonaType = "applicant" | "employee" | "hr" | "manager";
+type PersonaType = "applicant" | "employee" | "hr" | "manager" | "admin" | "system-admin";
 
 export function Sidebar({ persona = "applicant" }: { persona?: PersonaType }) {
   const router = useRouter();
@@ -54,6 +54,15 @@ useEffect(() => {
   const handleLogout = async () => {
     await logoutApi();
     router.push("/login");
+  };
+
+  const personaLabel: Record<PersonaType, string> = {
+    applicant: "Applicant Portal",
+    employee: "Employee Portal",
+    hr: "HR Portal",
+    manager: "Manager Portal",
+    admin: "Admin Portal",
+    "system-admin": "System Admin Portal",
   };
 
   const linkStyle = (href: string) =>
@@ -147,6 +156,33 @@ useEffect(() => {
               </Link>
             </>
           )}
+
+          {/* ================= ADMIN LINKS ================= */}
+          {persona === "admin" && (
+            <>
+              <Link href="/admin" className={linkStyle("/admin")}>
+                <LayoutDashboard className="h-4 w-4" /> Dashboard
+              </Link>
+              <Link href="/admin/users" className={linkStyle("/admin/users")}>
+                <Users className="h-4 w-4" /> Users
+              </Link>
+            </>
+          )}
+
+          {/* ================= SYSTEM ADMIN LINKS ================= */}
+          {persona === "system-admin" && (
+            <>
+              <Link href="/system-admin" className={linkStyle("/system-admin")}>
+                <LayoutDashboard className="h-4 w-4" /> Dashboard
+              </Link>
+              <Link href="/system-admin/companies" className={linkStyle("/system-admin/companies")}>
+                <Briefcase className="h-4 w-4" /> Companies
+              </Link>
+              <Link href="/system-admin/users" className={linkStyle("/system-admin/users")}>
+                <Users className="h-4 w-4" /> Users
+              </Link>
+            </>
+          )}
         </nav>
       </div>
 
@@ -188,7 +224,7 @@ useEffect(() => {
         </div>
         <div>
           <p className="text-sm font-semibold">{userName}</p>
-          <p className="text-xs text-white/60 capitalize">{persona} Portal</p>
+          <p className="text-xs text-white/60">{personaLabel[persona]}</p>
         </div>
       </div>
     </div>

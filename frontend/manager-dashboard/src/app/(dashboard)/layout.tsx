@@ -11,10 +11,9 @@ import { roleToPath } from "@/lib/roleMap";
 type PersonaType =
   | "system-admin"
   | "admin"
-  | "hr-manager"
-  | "hr-recruiter"
-  | "hr-interviewer"
+  | "hr"
   | "employee"
+  | "manager"
   | "applicant";
 
 function roleNameToPersona(roleName?: string): PersonaType | null {
@@ -24,11 +23,9 @@ function roleNameToPersona(roleName?: string): PersonaType | null {
     case "Admin":
       return "admin";
     case "HR Manager":
-      return "hr-manager";
     case "HR Recruiter":
-      return "hr-recruiter";
     case "HR Interviewer":
-      return "hr-interviewer";
+      return "hr";
     case "Active Employee":
       return "employee";
     case "Applicant":
@@ -97,10 +94,10 @@ export default function SharedDashboardLayout({
 
   return (
     <div className="flex h-screen w-full bg-slate-100 overflow-hidden">
-      <Sidebar persona={persona as any} />
+      <Sidebar persona={persona} />
 
       <div className="flex flex-col flex-1 min-w-0">
-        <Topbar persona={persona as any} />
+        <Topbar persona={persona} />
 
         <main className="flex-1 overflow-y-auto p-10">{children}</main>
       </div>
