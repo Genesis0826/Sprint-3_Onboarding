@@ -1,6 +1,6 @@
 # BluesClues HRIS
 
-A monorepo containing the authentication API and manager/applicant dashboard for the BluesClues HR Information System.
+A monorepo containing the authentication API and manager/applicant dashboard for the BluesClues HR Information System. Purely para sa devs lang to check progress ng lahat and para madali iconnect front at backend
 
 **Stack:** NestJS 11 · Next.js 16 · Supabase · JWT · Tailwind CSS · shadcn/ui
 
@@ -69,6 +69,12 @@ npx expo start -c
 
 SCAN QR CODE USING EXPO GO APP
 ```
+
+
+
+## MORE INFO LANG PERO NASA ABOVE LANG NAMAN NEED PARA MARUN
+
+
 
 ## Environment Variables
 
