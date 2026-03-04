@@ -57,6 +57,20 @@ App runs at `http://localhost:3000`
 
 ---
 
+
+### 4. Set up the MOBILE ONLY
+
+Open a third terminal:
+
+```bash
+cd blues-clues-hris-mobile
+npm install
+npm install
+npx expo start -c
+
+SCAN QR CODE USING EXPO GO APP
+```
+
 ## Environment Variables
 
 Create `tribeX-hris-auth-api/.env` based on `.env.example`:
