@@ -2,6 +2,9 @@
 
 A monorepo containing the authentication API and manager/applicant dashboard for the BluesClues HR Information System. Purely para sa devs lang to check progress ng lahat and para madali iconnect front at backend
 
+GDocs Link:
+https://docs.google.com/document/d/1QbcjtozYNobPMb_ffn4uEWH5RwJ_TpOB4eTlkHVu4oE/edit?tab=t.0
+
 **Stack:** NestJS 11 · Next.js 16 · Supabase · JWT · Tailwind CSS · shadcn/ui
 
 ---
@@ -210,7 +213,8 @@ Use these accounts for local development and testing (Supabase seed data):
 | Employee     | `ludovicastorti@gmail.com` |
 | Manager      | `ludovicastorti@gmail.com` |
 
-> Passwords are shared separately — ask your team lead.
+> Passwords: password123
+> FOR ALL USERS
 
 ---
 
