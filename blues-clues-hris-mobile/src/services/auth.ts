@@ -12,6 +12,10 @@ export interface UserSession {
 const ACCESS_KEY = "access_token";
 const REFRESH_KEY = "refresh_token";
 
+// In-memory store for non-persistent (rememberMe: false) sessions.
+// These are cleared when the JS runtime is torn down (app process killed).
+const memoryStore: { accessToken?: string; refreshToken?: string } = {};
+
 function parseJwt(token: string): any | null {
   try {
     const base64Url = token.split(".")[1];
@@ -76,8 +80,9 @@ export async function login(identifier: string, password: string, rememberMe: bo
       await AsyncStorage.setItem(ACCESS_KEY, access_token);
       await AsyncStorage.setItem(REFRESH_KEY, refresh_token);
     } else {
-      await AsyncStorage.setItem(`${ACCESS_KEY}_temp`, access_token);
-      await AsyncStorage.setItem(`${REFRESH_KEY}_temp`, refresh_token);
+      // Use in-memory store — not persisted across app process restarts
+      memoryStore.accessToken = access_token;
+      memoryStore.refreshToken = refresh_token;
     }
 
     return { ok: true as const, user: { role, name, email: payload.email ?? "" } as UserSession };
@@ -91,10 +96,9 @@ export async function saveSession(_session: UserSession, _persist: boolean): Pro
 
 export async function getSession(): Promise<UserSession | null> {
   try {
-    const isPersistent = !!(await AsyncStorage.getItem(ACCESS_KEY));
-    const accessToken =
-      (await AsyncStorage.getItem(ACCESS_KEY)) ??
-      (await AsyncStorage.getItem(`${ACCESS_KEY}_temp`));
+    const persistedAccess = await AsyncStorage.getItem(ACCESS_KEY);
+    const isPersistent = !!persistedAccess;
+    const accessToken = persistedAccess ?? memoryStore.accessToken ?? null;
 
     if (!accessToken) return null;
 
@@ -102,9 +106,8 @@ export async function getSession(): Promise<UserSession | null> {
     if (!payload) return null;
 
     if (payload.exp && Date.now() / 1000 > payload.exp) {
-      const refreshToken =
-        (await AsyncStorage.getItem(REFRESH_KEY)) ??
-        (await AsyncStorage.getItem(`${REFRESH_KEY}_temp`));
+      const persistedRefresh = await AsyncStorage.getItem(REFRESH_KEY);
+      const refreshToken = persistedRefresh ?? memoryStore.refreshToken ?? null;
 
       if (!refreshToken) return null;
 
@@ -119,8 +122,11 @@ export async function getSession(): Promise<UserSession | null> {
       const data = await res.json().catch(() => ({}));
       if (!data?.access_token) return null;
 
-      const slot = isPersistent ? ACCESS_KEY : `${ACCESS_KEY}_temp`;
-      await AsyncStorage.setItem(slot, data.access_token);
+      if (isPersistent) {
+        await AsyncStorage.setItem(ACCESS_KEY, data.access_token);
+      } else {
+        memoryStore.accessToken = data.access_token;
+      }
 
       const newPayload = parseJwt(data.access_token);
       if (!newPayload) return null;
@@ -144,9 +150,8 @@ export async function getSession(): Promise<UserSession | null> {
 
 export async function clearSession(): Promise<void> {
   try {
-    const refreshToken =
-      (await AsyncStorage.getItem(REFRESH_KEY)) ??
-      (await AsyncStorage.getItem(`${REFRESH_KEY}_temp`));
+    const persistedRefresh = await AsyncStorage.getItem(REFRESH_KEY);
+    const refreshToken = persistedRefresh ?? memoryStore.refreshToken ?? null;
 
     if (refreshToken) {
       await fetch(`${API_BASE_URL}/logout`, {
@@ -156,6 +161,8 @@ export async function clearSession(): Promise<void> {
       }).catch(() => {});
     }
 
-    await AsyncStorage.multiRemove([ACCESS_KEY, REFRESH_KEY, `${ACCESS_KEY}_temp`, `${REFRESH_KEY}_temp`]);
+    await AsyncStorage.multiRemove([ACCESS_KEY, REFRESH_KEY]);
+    memoryStore.accessToken = undefined;
+    memoryStore.refreshToken = undefined;
   } catch {}
 }

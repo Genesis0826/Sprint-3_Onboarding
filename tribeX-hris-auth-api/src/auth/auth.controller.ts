@@ -23,11 +23,13 @@ export class AuthController {
     return this.authService.login(loginDto, req);
   }
 
+  @UseGuards(ThrottlerGuard)
   @Post('refresh')
   refresh(@Body() body: { refresh_token: string }) {
     return this.authService.refresh(body.refresh_token);
   }
 
+  @UseGuards(ThrottlerGuard)
   @Post('logout')
   logout(@Body() body: { refresh_token: string }, @Req() req: Request) {
     return this.authService.logout(body.refresh_token, req);

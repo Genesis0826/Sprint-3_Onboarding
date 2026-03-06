@@ -205,13 +205,13 @@ Current base: `http://localhost:5000/api/tribeX/auth/v1/`
 
 Use these accounts for local development and testing (Supabase seed data):
 
-| Role         | Email                      |
-| ------------ | -------------------------- |
-| System Admin | `johndoedoe@gmail.com`     |
-| Admin        | `rickgrimes@gmail.com`     |
-| HR Officer   | `chiarraalteri@gmail.com`  |
-| Employee     | `ludovicastorti@gmail.com` |
-| Manager      | `ludovicastorti@gmail.com` |
+| Role         | Email                            |
+| ------------ | -------------------------------- |
+| System Admin | `johndoedoe@gmail.com`           |
+| Admin        | `rickgrimes@gmail.com`           |
+| HR Officer   | `chiarraalteri@gmail.com`        |
+| Employee     | `ludovicastorti@gmail.com`       |
+| Manager      | `cheenamarilenejaring@gmail.com` |
 
 > Passwords: password123
 > FOR ALL USERS

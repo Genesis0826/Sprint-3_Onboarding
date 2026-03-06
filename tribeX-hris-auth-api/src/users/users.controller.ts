@@ -13,14 +13,14 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-findAll(@Req() req: any) {
-  return {
-    message: 'Users endpoint working',
-    role: req.user.role_name,
-    user: req.user,
-    
-  };
-}
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  findAll(@Req() req: any) {
+    return {
+      message: 'Users endpoint working',
+      role: req.user.role_name,
+    };
+  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {

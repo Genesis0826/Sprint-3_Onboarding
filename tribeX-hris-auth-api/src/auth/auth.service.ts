@@ -254,6 +254,7 @@ export class AuthService {
   async me(accessToken: string) {
     try {
       const decoded: any = await this.jwtService.verifyAsync(accessToken);
+      if (decoded.type !== 'access') throw new UnauthorizedException('Invalid token type');
       const supabase = this.supabaseService.getClient();
       const userId = decoded.sub_userid;
       if (!userId) throw new UnauthorizedException('Invalid token payload');
