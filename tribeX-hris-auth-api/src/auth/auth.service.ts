@@ -147,7 +147,7 @@ export class AuthService {
     return { access_token, refresh_token };
   }
 
-  async logout(refreshToken: string, req?: any) {
+  async logout(refreshToken: string, req?: any, accessToken?: string) {
     const supabase = this.supabaseService.getClient();
 
     let decoded: any;
@@ -164,6 +164,19 @@ export class AuthService {
       .update({ revoked_at: new Date().toISOString() })
       .eq('user_id', decoded.sub_userid)
       .eq('token_hash', token_hash);
+
+    // Blacklist the access token so it cannot be used after logout
+    if (accessToken) {
+      try {
+        const accessDecoded: any = this.jwtService.decode(accessToken);
+        if (accessDecoded?.exp) {
+          await supabase.from('token_blacklist').insert({
+            token_hash: sha256(accessToken),
+            expires_at: new Date(accessDecoded.exp * 1000).toISOString(),
+          });
+        }
+      } catch { /* best-effort: ignore if access token is already invalid */ }
+    }
 
     await supabase.from('logout_history').insert({
       logout_id: crypto.randomUUID(),
@@ -256,6 +269,15 @@ export class AuthService {
       const decoded: any = await this.jwtService.verifyAsync(accessToken);
       if (decoded.type !== 'access') throw new UnauthorizedException('Invalid token type');
       const supabase = this.supabaseService.getClient();
+
+      // Reject blacklisted (logged-out) access tokens
+      const { data: blacklisted } = await supabase
+        .from('token_blacklist')
+        .select('token_hash')
+        .eq('token_hash', sha256(accessToken))
+        .maybeSingle();
+      if (blacklisted) throw new UnauthorizedException('Token has been revoked');
+
       const userId = decoded.sub_userid;
       if (!userId) throw new UnauthorizedException('Invalid token payload');
 

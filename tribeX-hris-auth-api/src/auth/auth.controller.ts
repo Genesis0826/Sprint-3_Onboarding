@@ -31,8 +31,13 @@ export class AuthController {
 
   @UseGuards(ThrottlerGuard)
   @Post('logout')//calls logout sa auth.service.ts
-  logout(@Body() body: { refresh_token: string }, @Req() req: Request) {
-    return this.authService.logout(body.refresh_token, req);
+  logout(
+    @Body() body: { refresh_token: string },
+    @Req() req: Request,
+    @Headers('authorization') authHeader?: string,
+  ) {
+    const accessToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined;
+    return this.authService.logout(body.refresh_token, req, accessToken);
   }
 
   @Get('me')
