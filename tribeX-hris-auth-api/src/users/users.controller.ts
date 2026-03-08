@@ -39,8 +39,22 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @Roles(...ADMIN_ONLY)
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  create(@Body() createUserDto: CreateUserDto, @Req() req: any) {
+    const isSystemAdmin = req.user.role_name === 'System Admin';
+
+    // System Admin must provide company_id in the body
+    // Admin uses their own company_id from the JWT
+    const companyId = isSystemAdmin ? createUserDto.company_id : req.user.company_id;
+
+    if (!companyId) {
+      throw new Error(
+        isSystemAdmin
+          ? 'System Admin must provide company_id in the request body'
+          : 'Could not determine company from token'
+      );
+    }
+
+    return this.usersService.create(createUserDto, companyId);
   }
 
   @UseGuards(RolesGuard)
@@ -53,7 +67,7 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @Roles(...ADMIN_ONLY)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  async remove(@Param('id') id: string, @Req() req: any) {
+    return this.usersService.remove(id, req.user.company_id);
   }
 }

@@ -40,6 +40,11 @@ export class AuthController {
     return this.authService.logout(body.refresh_token, req, accessToken);
   }
 
+  @Post('set-password')
+  setPassword(@Body() body: { token: string; password: string }) {
+    return this.authService.setPassword(body.token, body.password);
+  }
+
   @Get('me')
   me(@Headers('authorization') authHeader?: string) {
     if (!authHeader) throw new UnauthorizedException('Missing Authorization header');

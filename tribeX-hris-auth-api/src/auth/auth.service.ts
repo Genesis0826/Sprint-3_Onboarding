@@ -13,9 +13,9 @@ type UserRow = {
   username: string | null;
   employee_id: string | null;
   password_hash: string | null;
-  is_active: boolean;
   first_name: string | null;
   last_name: string | null;
+  start_date: string | null;
 };
 
 function sha256(input: string) {
@@ -54,7 +54,7 @@ export class AuthService {
 
     const { data: user, error } = await supabase
       .from('user_profile')
-      .select('user_id, company_id, role_id, password_hash, email, username, first_name, last_name')
+      .select('user_id, company_id, role_id, password_hash, email, username, first_name, last_name, start_date')
       .or(`email.eq."${identifier}",username.eq."${identifier}"`)
       .maybeSingle<UserRow>();
 
@@ -64,6 +64,19 @@ export class AuthService {
     }
     if (!user) throw new UnauthorizedException('User not found');
     if (!user.password_hash) throw new UnauthorizedException('No password set');
+
+    // Block login if today is before the employee's start date
+    if (user.start_date) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const startDate = new Date(user.start_date);
+      startDate.setHours(0, 0, 0, 0);
+      if (today < startDate) {
+        throw new UnauthorizedException(
+          `Your account is not active yet. Your start date is ${startDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}.`
+        );
+      }
+    }
 
     const isMatch = await bcrypt.compare(password, user.password_hash);
 
@@ -301,5 +314,40 @@ export class AuthService {
     } catch {
       throw new UnauthorizedException('Invalid token');
     }
+  }
+
+  async setPassword(token: string, password: string) {
+    const supabase = this.supabaseService.getClient();
+    const tokenHash = sha256(token);
+
+    // Find the invite — must exist, not used, not expired
+    const { data: invite, error: inviteError } = await supabase
+      .from('user_invites')
+      .select('invite_id, user_id, expires_at, used_at')
+      .eq('token_hash', tokenHash)
+      .maybeSingle();
+
+    if (inviteError || !invite) throw new UnauthorizedException('Invalid or expired invite link');
+    if (invite.used_at)          throw new UnauthorizedException('This invite link has already been used');
+    if (new Date(invite.expires_at) <= new Date()) throw new UnauthorizedException('This invite link has expired');
+
+    // Hash the new password
+    const password_hash = await bcrypt.hash(password, 12);
+
+    // Set the password and mark email as verified
+    const { error: updateError } = await supabase
+      .from('user_profile')
+      .update({ password_hash, email_verified: true })
+      .eq('user_id', invite.user_id);
+
+    if (updateError) throw new Error(updateError.message);
+
+    // Mark the invite as used so it can't be reused
+    await supabase
+      .from('user_invites')
+      .update({ used_at: new Date().toISOString() })
+      .eq('invite_id', invite.invite_id);
+
+    return { message: 'Password set successfully. You can now log in.' };
   }
 }
