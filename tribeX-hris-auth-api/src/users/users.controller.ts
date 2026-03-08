@@ -7,19 +7,27 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 
+// Role names must match exactly what is stored in the `role` table
+const HR_AND_ABOVE = ['Admin', 'System Admin', 'HR Officer', 'HR Recruiter', 'HR Interviewer', 'Manager'];
+const ADMIN_ONLY = ['Admin', 'System Admin'];
+
 @UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Get('stats')
+  @UseGuards(RolesGuard)
+  @Roles(...HR_AND_ABOVE)
+  findStats(@Req() req: any) {
+    return this.usersService.findStats(req.user.company_id);
+  }
+
   @Get()
   @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @Roles(...HR_AND_ABOVE)
   findAll(@Req() req: any) {
-    return {
-      message: 'Users endpoint working',
-      role: req.user.role_name,
-    };
+    return this.usersService.findAll(req.user.company_id);
   }
 
   @Get(':id')
@@ -27,16 +35,15 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
-  @UseGuards(RolesGuard) //role guard muna bago ma-access yung endpoint
-  @Roles('ADMIN')// admin lang pwedeng mag-create ng user
+  @UseGuards(RolesGuard)
+  @Roles(...ADMIN_ONLY)
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
-
   @UseGuards(RolesGuard)
-  @Roles('ADMIN') // name na nakalagay dito dapat exact sa supabase or hindi magwowork access sa endpoint
+  @Roles(...ADMIN_ONLY)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -46,7 +53,7 @@ export class UsersController {
   }
 
   @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @Roles(...ADMIN_ONLY)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
