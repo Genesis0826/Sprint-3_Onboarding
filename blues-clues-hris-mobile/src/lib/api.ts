@@ -9,4 +9,4 @@
 // 3. Make sure your backend is running (npm run start:dev in tribeX-hris-auth-api)
 // 4. Start the mobile app and test login with a real account from your DB
 
-export const API_BASE_URL = "http://192.168.1.4:5000/api/tribeX/auth/v1";
+export const API_BASE_URL = "https://blues-clues-hris-backend-frontend-mobile-production.up.railway.app/api/tribeX/auth/v1";

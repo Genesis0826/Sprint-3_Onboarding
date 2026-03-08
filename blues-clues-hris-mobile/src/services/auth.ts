@@ -148,6 +148,54 @@ export async function getSession(): Promise<UserSession | null> {
   }
 }
 
+export async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const persistedAccess = await AsyncStorage.getItem(ACCESS_KEY);
+  const isPersistent = !!persistedAccess;
+  let accessToken = persistedAccess ?? memoryStore.accessToken ?? null;
+
+  if (!accessToken) throw new Error("Not authenticated");
+
+  const makeRequest = (token: string) =>
+    fetch(url, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers as Record<string, string> | undefined),
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+  let res = await makeRequest(accessToken);
+
+  if (res.status === 401) {
+    const persistedRefresh = await AsyncStorage.getItem(REFRESH_KEY);
+    const refreshToken = persistedRefresh ?? memoryStore.refreshToken ?? null;
+
+    if (!refreshToken) { await clearSession(); throw new Error("Session expired"); }
+
+    const refreshRes = await fetch(`${API_BASE_URL}/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+
+    if (!refreshRes.ok) { await clearSession(); throw new Error("Session expired"); }
+
+    const data = await refreshRes.json().catch(() => ({}));
+    if (!data?.access_token) { await clearSession(); throw new Error("Session expired"); }
+
+    if (isPersistent) {
+      await AsyncStorage.setItem(ACCESS_KEY, data.access_token);
+    } else {
+      memoryStore.accessToken = data.access_token;
+    }
+
+    res = await makeRequest(data.access_token);
+  }
+
+  return res;
+}
+
 export async function clearSession(): Promise<void> {
   try {
     const persistedRefresh = await AsyncStorage.getItem(REFRESH_KEY);
