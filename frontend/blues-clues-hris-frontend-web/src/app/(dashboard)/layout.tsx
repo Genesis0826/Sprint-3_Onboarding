@@ -2,7 +2,7 @@
 
 import { useState, useLayoutEffect, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { getRefreshToken, clearAuthStorage, saveUserInfo, getAccessToken, parseJwt } from "@/lib/authStorage";
+import { clearAuthStorage, saveUserInfo, getAccessToken, parseJwt } from "@/lib/authStorage";
 import { authFetch, logoutApi } from "@/lib/authApi";
 import { useIdleTimeout } from "@/lib/useIdleTimeout";
 import { API_BASE_URL } from "@/lib/api";
@@ -30,13 +30,6 @@ export default function SharedDashboardLayout({
   useIdleTimeout(handleIdle, role === "system-admin");
 
   useLayoutEffect(() => {
-    const refreshToken = getRefreshToken();
-
-    if (!refreshToken) {
-      router.replace("/login");
-      return;
-    }
-
     const verify = async () => {
       const res = await authFetch(`${API_BASE_URL}/me`);
       if (!res.ok) {
