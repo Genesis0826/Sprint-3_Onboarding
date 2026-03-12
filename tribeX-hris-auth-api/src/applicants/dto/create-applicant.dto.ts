@@ -1,9 +1,9 @@
 // src/applicants/dto/create-applicant.dto.ts
 // Fields for applicant self-registration on the Career Portal.
-// Do NOT add phone, resume_url, role, company_id — those are handled elsewhere.
+// Do NOT add resume_url, role, company_id — those are handled elsewhere.
 
-import { IsEmail, IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateApplicantDto {
   @ApiProperty({ example: 'Juan' })
@@ -28,4 +28,10 @@ export class CreateApplicantDto {
   @IsNotEmpty()
   @MinLength(8)
   password: string;
+
+  @ApiPropertyOptional({ example: '+639171234567' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  phone_number?: string;
 }
