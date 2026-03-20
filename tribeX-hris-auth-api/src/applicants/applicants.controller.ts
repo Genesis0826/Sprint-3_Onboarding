@@ -101,4 +101,12 @@ export class ApplicantsController {
   verifyEmail(@Query('token') token: string) {
     return this.applicantsService.verifyEmail(token);
   }
+
+  @Post('resend-verification')
+  @UseGuards(ThrottlerGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Resend verification email to an unverified applicant' })
+  resendVerification(@Body() body: { email: string }) {
+    return this.applicantsService.resendVerification(body.email);
+  }
 }

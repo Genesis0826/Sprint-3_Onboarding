@@ -266,6 +266,12 @@ export class TimekeepingService {
       );
     }
 
+    if (existing?.log_type === 'time-out') {
+      throw new BadRequestException(
+        'You have already completed your attendance for today. Multiple shifts per day are not allowed.',
+      );
+    }
+
     const nowDate = new Date();
     const now = nowDate.toISOString();
     const log_id = crypto.randomUUID();

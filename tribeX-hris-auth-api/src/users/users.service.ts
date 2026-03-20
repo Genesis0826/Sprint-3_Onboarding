@@ -678,6 +678,38 @@ export class UsersService {
     );
   }
 
+  async renameDepartment(id: string, name: string, companyId: string) {
+    const supabase = this.supabaseService.getClient();
+    const { data, error } = await supabase
+      .from('department')
+      .update({ department_name: name })
+      .eq('department_id', id)
+      .eq('company_id', companyId)
+      .select('department_id, department_name')
+      .single();
+    if (error) throw new Error(error.message);
+    if (!data) throw new NotFoundException('Department not found.');
+    return data;
+  }
+
+  async deleteDepartment(id: string, companyId: string) {
+    const supabase = this.supabaseService.getClient();
+    // Unassign all users in this department first
+    await supabase
+      .from('user_profile')
+      .update({ department_id: null })
+      .eq('department_id', id)
+      .eq('company_id', companyId);
+
+    const { error } = await supabase
+      .from('department')
+      .delete()
+      .eq('department_id', id)
+      .eq('company_id', companyId);
+    if (error) throw new Error(error.message);
+    return { deleted: true };
+  }
+
   async getDepartments(companyId: string) {
     if (!companyId) return [];
     const { data, error } = await this.supabaseService

@@ -82,6 +82,26 @@ export class UsersController {
     return this.usersService.getDepartments(req.user.company_id);
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(...ADMIN_ONLY)
+  @Patch('departments/:id')
+  async renameDepartment(
+    @Param('id') id: string,
+    @Body('department_name') name: string,
+    @Req() req: any,
+  ) {
+    if (!name?.trim())
+      throw new BadRequestException('Department name is required.');
+    return this.usersService.renameDepartment(id, name.trim(), req.user.company_id);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(...ADMIN_ONLY)
+  @Delete('departments/:id')
+  async deleteDepartment(@Param('id') id: string, @Req() req: any) {
+    return this.usersService.deleteDepartment(id, req.user.company_id);
+  }
+
   @Get('companies')
   @UseGuards(RolesGuard)
   @Roles(...ADMIN_ONLY)
@@ -133,7 +153,7 @@ export class UsersController {
   }
 
   @UseGuards(RolesGuard)
-  @Roles(...ADMIN_ONLY)
+  @Roles(...HR_AND_ABOVE)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -149,7 +169,7 @@ export class UsersController {
   }
 
   @UseGuards(RolesGuard)
-  @Roles(...ADMIN_ONLY)
+  @Roles(...HR_AND_ABOVE)
   @Delete(':id')
   async remove(@Param('id') id: string, @Req() req: any) {
     return this.usersService.remove(
@@ -160,7 +180,7 @@ export class UsersController {
   }
 
   @UseGuards(RolesGuard)
-  @Roles(...ADMIN_ONLY)
+  @Roles(...HR_AND_ABOVE)
   @Patch(':id/resend-invite')
   async resendInvite(@Param('id') id: string, @Req() req: any) {
     return this.usersService.resendInvite(
@@ -171,7 +191,7 @@ export class UsersController {
   }
 
   @UseGuards(RolesGuard)
-  @Roles(...ADMIN_ONLY)
+  @Roles(...HR_AND_ABOVE)
   @Patch(':id/reactivate')
   async reactivate(@Param('id') id: string, @Req() req: any) {
     return this.usersService.reactivate(
